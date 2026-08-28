@@ -1,0 +1,67 @@
+[
+  {
+    "intervention_id": "INT-APP-001",
+    "patient_id": "PT-0002966",
+    "proposed_action": "home_health_referral",
+    "provider_id": "PRV-015",
+    "approval_status": "committed",
+    "approved_by": "coord.martinez@cedarhealth.org",
+    "trigger_reason": "risk_score_threshold: 0.95 critical, 2 open gaps",
+    "created_at": "2026-08-28T01:45:00Z",
+    "committed_at": "2026-08-28T01:50:00Z",
+    "outcome_status": "completed",
+    "effectiveness_score": 0.91
+  },
+  {
+    "intervention_id": "INT-APP-002",
+    "patient_id": "PT-0001613",
+    "proposed_action": "med_reconciliation",
+    "provider_id": "PRV-042",
+    "approval_status": "committed",
+    "approved_by": "coord.martinez@cedarhealth.org",
+    "trigger_reason": "risk_score_threshold: 0.95 critical, COPD + medication-adherence gap",
+    "created_at": "2026-08-28T01:52:00Z",
+    "committed_at": "2026-08-28T01:55:00Z",
+    "outcome_status": "completed",
+    "effectiveness_score": 0.78
+  },
+  {
+    "intervention_id": "INT-APP-003",
+    "patient_id": "PT-0002228",
+    "proposed_action": "followup_call",
+    "provider_id": "PRV-017",
+    "approval_status": "approved",
+    "approved_by": "coord.johnson@cedarhealth.org",
+    "trigger_reason": "scheduled_scan: daily 08:00 UTC risk panel refresh",
+    "created_at": "2026-08-28T02:00:00Z",
+    "committed_at": "2026-08-28T02:05:00Z",
+    "outcome_status": "pending",
+    "effectiveness_score": null
+  },
+  {
+    "intervention_id": "INT-APP-004",
+    "patient_id": "PT-0003704",
+    "proposed_action": "telehealth_visit",
+    "provider_id": "PRV-033",
+    "approval_status": "proposed",
+    "approved_by": null,
+    "trigger_reason": "assistant_recommendation: what-if analysis predicted 40% risk reduction",
+    "created_at": "2026-08-28T02:15:00Z",
+    "committed_at": null,
+    "outcome_status": "pending",
+    "effectiveness_score": null
+  },
+  {
+    "intervention_id": "INT-APP-005",
+    "patient_id": "PT-0002679",
+    "proposed_action": "care_plan_update",
+    "provider_id": "PRV-008",
+    "approval_status": "rejected",
+    "approved_by": "coord.martinez@cedarhealth.org",
+    "trigger_reason": "risk_score_threshold: 0.95 critical, AMI + 21 days post-discharge",
+    "created_at": "2026-08-28T02:10:00Z",
+    "committed_at": null,
+    "outcome_status": "cancelled",
+    "effectiveness_score": null
+  }
+]
