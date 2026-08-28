@@ -1,0 +1,36 @@
+# Hero Question
+"This patient is at risk of readmission. Which intervention should I run, and can my team absorb it?"
+
+# Decision Chain — PT-0002966 (Heart Failure, Critical Risk)
+
+## The Answer (Decision, not lookup):
+RUN a home_health_referral (INT-APP-001) for PT-0002966.
+Your team CAN absorb it: 2 home health slots available today, PRV-015 confirmed capacity.
+Expected risk reduction: 45% (0.95 → 0.52), saving ~$14,250 in avoided readmission cost.
+
+## Linked Record IDs Forming the Decision Chain:
+
+### 1. VISUALIZE (Live View → Trigger)
+- View query: view_query.sql → patient ranked #1 by risk (0.95, critical)
+- Trigger event: state_table.json → log_id=9 (risk_threshold breach for PT-0002966)
+- Panel context: 290 patients scanned, 47 critical (log_id=8, scheduled_scan)
+
+### 2. ASSIST (Explain + What-If + Draft)
+- Explanation: assist_log.jsonl → interaction 1 (why flagged: HF + 17d + 2 gaps)
+- What-if: assist_log.jsonl → interaction 2 (telehealth vs call vs home_health)
+- Drafted memo: drafted_sample.md (auto-generated referral note)
+- Search source: Lakebase clinical_search index (patient_id=PT-0002966)
+
+### 3. ACT (Propose → Approve → Commit → Closed Loop)
+- Proposed: writeback_table.json → INT-APP-001 (created_at=2026-08-28T01:45:00Z)
+- Approved: state_table.json → log_id=10 (coord.martinez approved)
+- Committed: writeback_table.json → INT-APP-001 (committed_at=2026-08-28T01:50:00Z)
+- Outcome: effectiveness_score=0.91, status=completed
+- Closed loop: Next view_query read shows PT-0002966 intervention count updated
+
+## App Details
+- App: cedar-health-coordinator (https://cedar-health-coordinator-7474654066080903.aws.databricksapps.com)
+- Lakebase: projects/cedar-health-lkyei/branches/production
+- AI Gateway: cedar-health-assistant endpoint
+- Synced UC Table (read-only): cedar_health.synced_open_atrisk
+- Writable Tables: cedar_app.interventions, cedar_app.audit_log

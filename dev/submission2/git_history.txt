@@ -1,0 +1,6 @@
+* 8e6a676 (HEAD -> main, origin/main) submission1: add all Build 1 (Lakebase) evidence files
+* 861439c docs: finalize submission on main branch
+| * 42399ec (submission/v2) submission: Cedar Health AI Challenge complete — all 3 builds with evidence
+|/  
+* 9595727 (submission/cedar-health-complete, submission-final) docs: add top-level README with architecture, metrics, and persona alignment
+* 832577d feat: complete Cedar Health AI Challenge — all 3 builds
