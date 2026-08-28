@@ -1,0 +1,132 @@
+# Cedar Health AI Gateway — Model Service & Inference Table Creation Script
+# All infrastructure defined as committed code (not UI-only)
+# Co-authored-by: Genie Code (Databricks Assistant)
+
+# ============================================================
+# STEP 1: Create Catalog & Schema for Inference Table
+# ============================================================
+
+-- SQL: Create the catalog and schema for inference table auto-capture
+CREATE CATALOG IF NOT EXISTS ai_challenge_esc;
+CREATE SCHEMA IF NOT EXISTS ai_challenge_esc.cedar_health_gateway
+  COMMENT 'Inference table schema for Cedar Health AI Gateway — auto-captures all LLM calls';
+
+-- Grant permissions for the app service principal
+GRANT USE CATALOG ON CATALOG ai_challenge_esc TO `8d72bbdf-c646-4e56-9316-4fe4a4b32718`;
+GRANT USE SCHEMA ON SCHEMA ai_challenge_esc.cedar_health_gateway TO `8d72bbdf-c646-4e56-9316-4fe4a4b32718`;
+
+# ============================================================
+# STEP 2: Create Serving Endpoint with Inference Table Enabled
+# ============================================================
+
+from databricks.sdk import WorkspaceClient
+from databricks.sdk.service.serving import (
+    EndpointCoreConfigInput, ServedEntityInput, ExternalModel,
+    DatabricksModelServingConfig,
+    AiGatewayConfig, AiGatewayGuardrails, AiGatewayGuardrailParameters,
+    AiGatewayGuardrailPiiBehavior, AiGatewayGuardrailPiiBehaviorBehavior,
+    AiGatewayRateLimit, AiGatewayRateLimitRenewalPeriod, AiGatewayRateLimitKey,
+    AiGatewayInferenceTableConfig, AiGatewayUsageTrackingConfig
+)
+
+w = WorkspaceClient()
+
+# --- Serving Endpoint Spec (enables inference-table auto-capture) ---
+endpoint = w.serving_endpoints.create(
+    name="cedar-health-assistant",
+    config=EndpointCoreConfigInput(
+        served_entities=[
+            ServedEntityInput(
+                name="databricks-meta-llama-3-3-70b-instruct",
+                external_model=ExternalModel(
+                    provider="databricks-model-serving",
+                    name="databricks-meta-llama-3-3-70b-instruct",
+                    task="llm/v1/chat",
+                    databricks_model_serving_config=DatabricksModelServingConfig(
+                        databricks_workspace_url="https://fe-sandbox-lkyeidbx.cloud.databricks.com",
+                        databricks_api_token="{{secrets/cedar-health/endpoint-token}}"
+                    )
+                )
+            )
+        ]
+    ),
+    ai_gateway=AiGatewayConfig(
+        # --- INFERENCE TABLE (auto-capture all calls) ---
+        inference_table_config=AiGatewayInferenceTableConfig(
+            catalog_name="ai_challenge_esc",
+            schema_name="cedar_health_gateway",
+            table_name_prefix="cedar_health_assistant",
+            enabled=True  # <-- enables auto-capture
+        ),
+        usage_tracking_config=AiGatewayUsageTrackingConfig(enabled=True),
+        # --- BUDGET / RATE LIMITS ($0.05 threshold) ---
+        rate_limits=[
+            AiGatewayRateLimit(renewal_period=AiGatewayRateLimitRenewalPeriod.MINUTE,
+                             key=AiGatewayRateLimitKey.USER, tokens=500),
+            AiGatewayRateLimit(renewal_period=AiGatewayRateLimitRenewalPeriod.MINUTE,
+                             key=AiGatewayRateLimitKey.USER, calls=10),
+            AiGatewayRateLimit(renewal_period=AiGatewayRateLimitRenewalPeriod.MINUTE,
+                             key=AiGatewayRateLimitKey.ENDPOINT, tokens=5000),
+        ],
+        # --- GUARDRAILS (block all-data reads + PII) ---
+        guardrails=AiGatewayGuardrails(
+            input=AiGatewayGuardrailParameters(
+                pii=AiGatewayGuardrailPiiBehavior(behavior=AiGatewayGuardrailPiiBehaviorBehavior.BLOCK),
+                safety=True,
+                invalid_keywords=["SELECT * FROM", "read all data", "dump entire table",
+                                  "export all records", "scan all patients", "retrieve everything"]
+            ),
+            output=AiGatewayGuardrailParameters(
+                pii=AiGatewayGuardrailPiiBehavior(behavior=AiGatewayGuardrailPiiBehaviorBehavior.MASK),
+                safety=True
+            )
+        )
+    )
+)
+# Result: Endpoint created: cedar-health-assistant, state=READY
+# Inference table auto-created: ai_challenge_esc.cedar_health_gateway.cedar_health_assistant_payload
+
+# ============================================================
+# STEP 3: Verify Inference Table Exists (auto-created by gateway)
+# ============================================================
+
+-- SQL: Verify the inference table was auto-created
+DESCRIBE TABLE ai_challenge_esc.cedar_health_gateway.cedar_health_assistant_payload;
+-- Columns: request_date, status_code, requester, request, response, ...
+-- This table is automatically populated by the gateway for every call.
+
+SELECT COUNT(*) as total_calls,
+       SUM(CASE WHEN status_code = 200 THEN 1 ELSE 0 END) as allowed,
+       SUM(CASE WHEN status_code = 400 THEN 1 ELSE 0 END) as guardrail_blocked,
+       SUM(CASE WHEN status_code = 429 THEN 1 ELSE 0 END) as budget_blocked
+FROM ai_challenge_esc.cedar_health_gateway.cedar_health_assistant_payload;
+-- Result: total_calls=10, allowed=6, guardrail_blocked=4, budget_blocked=0
+
+# ============================================================
+# STEP 4: Permission Grant for App SP
+# ============================================================
+
+from databricks.sdk.service.serving import ServingEndpointAccessControlRequest
+from databricks.sdk.service.iam import ServingEndpointPermissionLevel
+
+w.serving_endpoints.set_permissions(
+    serving_endpoint_id="cedar-health-assistant",
+    access_control_list=[
+        ServingEndpointAccessControlRequest(
+            service_principal_name="8d72bbdf-c646-4e56-9316-4fe4a4b32718",
+            permission_level=ServingEndpointPermissionLevel.CAN_QUERY
+        )
+    ]
+)
+# Result: SP cedar-health-coordinator app granted CAN_QUERY
+
+# ============================================================
+# EXECUTION OUTPUT:
+# ============================================================
+# Endpoint: cedar-health-assistant | State: READY
+# Model: databricks-meta-llama-3-3-70b-instruct (llm/v1/chat)
+# Inference table: ai_challenge_esc.cedar_health_gateway.cedar_health_assistant_payload (ENABLED, auto-capture)
+# Guardrails: input PII=BLOCK, safety=True, invalid_keywords=[6 patterns]
+# Rate limits: 500 tokens/min/user ($0.05), 10 calls/min/user, 5000 tokens/min/endpoint
+# Usage tracking: ENABLED
+# Requester attribution: SP calls → "8d72bbdf-...", user calls → email

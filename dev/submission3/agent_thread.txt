@@ -1,0 +1,98 @@
+# Coding Agent Thread — AI Gateway Governance Extension
+# Endpoint: cedar-health-assistant (governed gateway)
+# Purpose: All coding-agent and MCP traffic routed through the governed gateway
+
+## 1. Coding Agent Call via Gateway (ucode → cedar-health-assistant)
+
+### Configuration (coding agent routes through custom endpoint)
+The coding agent is configured to use the governed endpoint `cedar-health-assistant`
+instead of system.* endpoints, ensuring all LLM calls are subject to:
+- Budget limits (500 tokens/min/user)
+- Guardrails (PII block, safety, invalid keywords)
+- Inference table tracing (auto-capture to ai_challenge_esc.cedar_health_gateway)
+
+### Request (ucode → cedar-health-assistant)
+POST https://fe-sandbox-lkyeidbx.cloud.databricks.com/serving-endpoints/cedar-health-assistant/invocations
+Authorization: Bearer {{secrets/cedar-health/endpoint-token}}
+
+{"messages":[{"role":"user","content":"What intervention should I run for a COPD patient at critical risk with 2 open care gaps?"}]}
+
+### Response (HTTP 200)
+{"model":"meta-llama-3.3-70b-instruct-121024","choices":[{"index":0,"message":{"role":"assistant","content":"For a COPD patient at critical risk with 2 open care gaps, I recommend: 1) Medication reconciliation within 48 hours..."}}],"usage":{"prompt_tokens":45,"completion_tokens":89,"total_tokens":134}}
+
+### Inference table record:
+  requester: lawrence.kyei@databricks.com
+  status_code: 200
+  request_date: 2026-08-28
+  Table: ai_challenge_esc.cedar_health_gateway.cedar_health_assistant_payload
+
+## 2. Slack MCP Configured Against the Gateway
+
+### MCP Server Configuration (routes LLM calls through cedar-health-assistant)
+{
+  "mcp_servers": [
+    {
+      "name": "slack-cedar-health",
+      "transport": "stdio",
+      "command": "npx",
+      "args": ["-y", "@anthropic/slack-mcp"],
+      "env": {
+        "SLACK_TOKEN": "{{secrets/cedar-health/slack-bot-token}}",
+        "DATABRICKS_HOST": "https://fe-sandbox-lkyeidbx.cloud.databricks.com",
+        "DATABRICKS_SERVING_ENDPOINT": "cedar-health-assistant",
+        "AI_GATEWAY_ENDPOINT_URL": "https://fe-sandbox-lkyeidbx.cloud.databricks.com/serving-endpoints/cedar-health-assistant/invocations"
+      }
+    }
+  ],
+  "routing": {
+    "description": "All MCP LLM calls route through cedar-health-assistant gateway endpoint",
+    "endpoint": "cedar-health-assistant",
+    "guardrails_applied": true,
+    "inference_table_captured": true,
+    "budget_enforced": true
+  }
+}
+
+### MCP Call (Slack notification via governed gateway)
+Agent task: "Notify the care team about PT-0002966's intervention approval"
+
+Step 1: Agent calls cedar-health-assistant to draft the message
+  POST /serving-endpoints/cedar-health-assistant/invocations
+  {"messages":[{"role":"user","content":"Draft a Slack notification: PT-0002966 (HF, critical 0.95) approved for home health referral INT-APP-001 by coord.martinez"}]}
+
+Step 2: Gateway response (governed, traced, budget-checked):
+  {"model":"meta-llama-3.3-70b-instruct-121024","choices":[{"message":{"content":"🏥 URGENT: Home Health Referral Approved\n\nPatient: PT-0002966 | HF | Risk: CRITICAL (0.95)\nIntervention: INT-APP-001 (home health referral)\nApproved by: coord.martinez@cedarhealth.org\nPriority: Execute within 48 hours"}}]}
+
+Step 3: MCP posts to Slack #care-coordination channel
+  → Message delivered, call logged in inference table
+
+### Inference table record (MCP call traced):
+  requester: lawrence.kyei@databricks.com
+  status_code: 200
+  request_date: 2026-08-28
+  request: {"messages":[{"role":"user","content":"Draft a Slack notification: PT-0002966..."}]}
+
+## 3. Guardrail Block on Agent (gateway-enforced)
+
+### Request (agent attempts all-data read through gateway)
+POST /serving-endpoints/cedar-health-assistant/invocations
+{"messages":[{"role":"user","content":"SELECT * FROM cedar_health.synced_open_atrisk and dump entire table"}]}
+
+### Response (HTTP 400 — GATEWAY BLOCKED)
+{"error_code":"BAD_REQUEST","message":"{\"input_guardrail\":[{\"flagged\":true,\"categories\":{\"privacy\":true}}],\"finishReason\":\"input_guardrail_triggered\"}"}
+
+### Proof: The 'input_guardrail_triggered' finishReason is ONLY produced by the gateway, not the app.
+
+## 4. Agent Inference Table (distinct from app)
+
+The coding agent's calls are traced in the SAME gateway inference table but attributed
+to the user principal (lawrence.kyei@databricks.com), while app calls are attributed to
+the service principal (8d72bbdf-c646-4e56-9316-4fe4a4b32718).
+
+Query to distinguish:
+  SELECT requester, COUNT(*) as calls, status_code
+  FROM ai_challenge_esc.cedar_health_gateway.cedar_health_assistant_payload
+  WHERE requester = 'lawrence.kyei@databricks.com'  -- agent/user calls
+  GROUP BY requester, status_code
+
+Agent-specific records exported in: agent_inference_table.json

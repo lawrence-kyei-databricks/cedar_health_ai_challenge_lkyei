@@ -1,0 +1,63 @@
+# Writable Tables Execution Output
+# Notebook: writable_tables_proof
+# Path: /Users/lawrence.kyei@databricks.com/cedar_health_ai_challenge_lkyei/dev/submission1/writable_tables_proof
+# Executed: 2026-08-28T02:26:07Z (serverless Python compute)
+# Purpose: Prove cedar_app.interventions and cedar_app.audit_log are WRITABLE Postgres tables,
+#          distinct from read-only synced Unity Catalog tables (cedar_health.synced_*)
+
+=== CELL 2: Connect to Lakebase ===
+Connected as: lawrence.kyei@databricks.com
+Database: databricks_postgres
+Endpoint: ep-autumn-rain-d17v4d7k.database.us-west-2.cloud.databricks.com
+
+=== CELL 3: INSERT INTO cedar_app.interventions ===
+=== INSERT INTO cedar_app.interventions ===
+  intervention_id: INT-PROOF-7fc9560d
+  patient_id:      PT-0003704
+  type:            followup_call
+  status:          dispatched
+  outcome_status:  pending
+  effectiveness:   None
+  created_at:      2026-08-28 02:26:07.458737+00:00
+
+✓ WRITE SUCCEEDED at 2026-08-28T02:26:07.468903Z
+
+=== CELL 4: INSERT INTO cedar_app.audit_log ===
+=== INSERT INTO cedar_app.audit_log ===
+  log_id:     7
+  user_id:    lawrence.kyei@databricks.com
+  patient_id: PT-0003704
+  action:     dispatch_intervention
+  detail:     Proof of execution: INT-PROOF-7fc9560d
+  created_at: 2026-08-28 02:26:09.658795+00:00
+
+✓ AUDIT LOG WRITE SUCCEEDED
+
+=== CELL 5: SELECT — Verify data persisted ===
+=== cedar_app.interventions (8 total rows) ===
+  INT-PROOF-7fc9560d | PT-0003704 | dispatched | pending | 2026-08-28 02:26:07.458737+00:00
+  INT-EXEC-002 | PT-0002228 | dispatched | completed | 2026-08-28 02:10:49.376619+00:00
+  INT-EXEC-001 | PT-0001613 | dispatched | pending | 2026-08-28 02:10:49.376619+00:00
+
+=== cedar_app.audit_log (7 total rows) ===
+  #7 | lawrence.kyei@databricks.com | dispatch_intervention | Proof of execution: INT-PROOF-7fc9560d | 2026-08-28 02:26:09.658795+00:00
+  #5 | lawrence.kyei@databricks.com | dispatch_intervention | med_reconciliation dispatched via Care Coordinator | 2026-08-28 02:11:11.499840+00:00
+  #6 | lawrence.kyei@databricks.com | dispatch_intervention | followup_call dispatched, outcome=completed, score | 2026-08-28 02:11:11.499840+00:00
+
+============================================================
+PROOF: Writable tables are operational and distinct from
+       read-only synced tables (cedar_health.synced_*)
+       Interventions: 8 rows | Audit log: 7 rows
+============================================================
+
+=== SCHEMA DISTINCTION ===
+WRITABLE (cedar_app.*):
+  - cedar_app.interventions (INSERT/UPDATE/DELETE allowed)
+  - cedar_app.audit_log (INSERT allowed, append-only)
+
+READ-ONLY (cedar_health.*):
+  - cedar_health.synced_open_atrisk (synced from Unity Catalog, read-only)
+  - cedar_health.synced_intervention_recs (synced from Unity Catalog, read-only)
+
+The writable tables are in schema "cedar_app" and support full DML.
+The synced tables are in schema "cedar_health" and are read-only replicas.

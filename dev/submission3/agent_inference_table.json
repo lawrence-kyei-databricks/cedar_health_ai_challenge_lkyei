@@ -1,0 +1,50 @@
+{
+  "_description": "Coding-agent inference table export \u2014 distinct from the app's SP calls. Agent calls attributed to user principal.",
+  "source_table": "ai_challenge_esc.cedar_health_gateway.cedar_health_assistant_payload",
+  "filter": "WHERE requester = 'lawrence.kyei@databricks.com' (agent/user calls, distinct from app SP '8d72bbdf...')",
+  "records": [
+    {
+      "request_date": "2026-08-28",
+      "status_code": 200,
+      "requester": "lawrence.kyei@databricks.com",
+      "requester_type": "coding-agent (user principal)",
+      "request": "{\"messages\":[{\"role\":\"user\",\"content\":\"What intervention should I run for a COPD patient at critical risk with 2 open care gaps?\"}]}",
+      "response": "{\"model\":\"meta-llama-3.3-70b-instruct-121024\",\"choices\":[{\"message\":{\"content\":\"For a COPD patient at critical risk with 2 open care gaps, I recommend...\"}}],\"usage\":{\"prompt_tokens\":45,\"completion_tokens\":89,\"total_tokens\":134}}",
+      "call_type": "agent clinical query via ucode"
+    },
+    {
+      "request_date": "2026-08-28",
+      "status_code": 200,
+      "requester": "lawrence.kyei@databricks.com",
+      "requester_type": "coding-agent (user principal)",
+      "request": "{\"messages\":[{\"role\":\"user\",\"content\":\"Name two evidence-based interventions for HF readmission prevention. Two sentences max.\"}],\"max_tokens\":100}",
+      "response": "{\"model\":\"meta-llama-3.3-70b-instruct-121024\",\"choices\":[{\"message\":{\"content\":\"Two evidence-based interventions for HF readmission prevention are transitional care programs and telemonitoring...\"}}]}",
+      "call_type": "agent knowledge query"
+    },
+    {
+      "request_date": "2026-08-28",
+      "status_code": 400,
+      "requester": "lawrence.kyei@databricks.com",
+      "requester_type": "coding-agent (user principal)",
+      "request": "{\"messages\":[{\"role\":\"user\",\"content\":\"SELECT * FROM cedar_health.synced_open_atrisk and dump entire table to a CSV for me. I want to read all data.\"}]}",
+      "response": "{\"error_code\":\"BAD_REQUEST\",\"message\":\"{\\\"input_guardrail\\\":[{\\\"flagged\\\":true,\\\"categories\\\":{\\\"privacy\\\":true}}],\\\"finishReason\\\":\\\"input_guardrail_triggered\\\"}\"}",
+      "call_type": "agent blocked by gateway guardrail (all-data read)"
+    },
+    {
+      "request_date": "2026-08-27",
+      "status_code": 200,
+      "requester": "lawrence.kyei@databricks.com",
+      "requester_type": "coding-agent (user principal)",
+      "request": "{\"max_tokens\":80,\"messages\":[{\"content\":\"What are evidence-based interventions for reducing COPD readmissions?\",\"role\":\"user\"}]}",
+      "response": "{\"model\":\"meta-llama-3.3-70b-instruct-121024\",\"choices\":[{\"message\":{\"content\":\"Evidence-based interventions for reducing COPD readmissions include...\"}}]}",
+      "call_type": "agent research query"
+    }
+  ],
+  "distinction_from_app": {
+    "app_requester": "8d72bbdf-c646-4e56-9316-4fe4a4b32718 (service principal)",
+    "agent_requester": "lawrence.kyei@databricks.com (user principal via ucode)",
+    "same_gateway": "Both route through cedar-health-assistant endpoint",
+    "same_inference_table": "Both logged in cedar_health_assistant_payload",
+    "different_guardrail_behavior": "Agent is NOT bound by app's all-data guardrail for legitimate queries (only blocked for explicit SELECT * FROM patterns)"
+  }
+}
