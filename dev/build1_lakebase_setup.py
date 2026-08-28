@@ -1,6 +1,7 @@
 # Databricks notebook source
 # DBTITLE 1,Build 1: Lakebase — Cedar Health Care Platform
 # Build 1: Lakebase — Cedar Health Care Platform
+# Evidence notebook for Cedar Health AI Challenge submission
 # Project: cedar-health-lkyei | PG 17 | Endpoint: ep-autumn-rain-d17v4d7k
 # Branches: production (READY), dev (READY)
 
