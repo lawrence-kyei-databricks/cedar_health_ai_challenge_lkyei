@@ -1,0 +1,7 @@
+[
+  {"patient_id": "PT-0001449", "summary_excerpt": "COPD patient, age band 75+ , Commercial . Recently discharged, no completed 7-day follow-up, medication-adherence concern, rising readmission risk.", "relevance": 0.24976495},
+  {"patient_id": "PT-0001613", "summary_excerpt": "COPD patient, age band 75+ , Commercial . Recently discharged, no completed 7-day follow-up, medication-adherence concern, rising readmission risk.", "relevance": 0.24976495},
+  {"patient_id": "PT-0000506", "summary_excerpt": "COPD patient, age band 75+ , Medicaid . Recently discharged, no completed 7-day follow-up, medication-adherence concern, rising readmission risk.", "relevance": 0.24976495},
+  {"patient_id": "PT-0000793", "summary_excerpt": "COPD patient, age band 75+ , Medicaid . Recently discharged, no completed 7-day follow-up, medication-adherence concern, rising readmission risk.", "relevance": 0.24976495},
+  {"patient_id": "PT-0002351", "summary_excerpt": "COPD patient, age band 75+ , Commercial . Recently discharged, no completed 7-day follow-up, medication-adherence concern, rising readmission risk.", "relevance": 0.24976495}
+]

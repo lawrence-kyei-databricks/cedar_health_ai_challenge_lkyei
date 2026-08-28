@@ -1,0 +1,26 @@
+# Git History Export
+# Generated: 2026-08-28T01:20:00Z
+# Command: git log --graph --oneline --decorate --all
+
+* 861439c (HEAD -> main, origin/main) docs: finalize submission on main branch
+| * 42399ec (submission/v2) submission: Cedar Health AI Challenge complete — all 3 builds with evidence
+|/  
+* 9595727 (submission/cedar-health-complete, submission-final) docs: add top-level README with architecture, metrics, and persona alignment
+* 832577d feat: complete Cedar Health AI Challenge — all 3 builds
+
+# Branch Structure:
+# - main: production-ready submission (default branch)
+# - submission/v2: intermediate development branch (used during build iteration)
+# - submission/cedar-health-complete: initial complete submission
+# - submission-final: pre-cleanup branch
+#
+# Workflow: 
+#   832577d → Initial commit with all build notebooks + submission READMEs
+#   9595727 → Added top-level README with architecture diagram
+#   861439c → Finalized on main for submission
+#   42399ec → Parallel iteration on submission/v2 (build1 evidence comment added)
+#
+# Lakebase Branching (separate from Git):
+#   production → Live operational data, synced tables, app-facing
+#   dev → Schema iteration, agent-driven changes, validation
+#   Promotion: dev changes validated then applied to production

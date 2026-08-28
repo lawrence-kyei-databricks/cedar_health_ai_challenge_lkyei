@@ -1,0 +1,40 @@
+# Lakebase Development Branch
+
+## Branch Info
+- Project: cedar-health-lkyei
+- Production branch: projects/cedar-health-lkyei/branches/production (READY)
+- Development branch: projects/cedar-health-lkyei/branches/dev (READY)
+- Branch type: Copy-on-write from production, no_expiry=True
+
+## Changes Made on Dev Branch
+
+### 1. Schema Migration: Intervention Outcomes Tracking
+Added outcome tracking columns to cedar_app.interventions:
+- outcome_status TEXT (CHECK: pending/completed/cancelled/escalated)
+- outcome_date TIMESTAMPTZ
+- effectiveness_score NUMERIC(3,2) (CHECK: 0.0-1.0)
+- Index: idx_interventions_outcome ON (outcome_status, outcome_date)
+
+### 2. Validation on Dev
+- Inserted test record with outcome_status='completed', effectiveness_score=0.85
+- Verified CHECK constraints enforce valid values
+- Confirmed index creation
+
+### 3. Promotion to Production
+- Same ALTER TABLE applied to production branch after validation
+- Same index created on production
+- Zero-downtime migration (additive columns only)
+
+## Branch Workflow
+1. Create dev branch (copy-on-write from production)
+2. Iterate schema changes on dev without risk to production
+3. Validate with test data
+4. Apply validated changes to production
+5. Dev branch remains for future experiments (no expiry)
+
+## Use Case: Safe Experimentation
+The dev branch enables:
+- Schema evolution testing before production
+- Agent-driven changes without production risk
+- Forecasting scenarios on isolated data
+- Performance testing of new indexes

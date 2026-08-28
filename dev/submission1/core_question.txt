@@ -1,0 +1,15 @@
+# Business Question
+
+Which critical-risk patients have the highest financial exposure with multiple open care gaps,
+and what is their total readmission cost risk to Cedar Health?
+
+## Context
+Cedar Health loses ~$45M annually to avoidable 30-day readmissions (~3,000/yr at $15K each).
+Care coordinators need to prioritize outreach to patients with the highest combined risk:
+- Critical risk band (readmission_risk_score >= 0.9)
+- Multiple open care gaps (open_gap_count >= 2)
+- High financial exposure per patient
+
+This query identifies the top 10 patients requiring immediate coordinator intervention,
+sorted by financial exposure. These are the patients where a single prevented readmission
+saves Cedar Health $14,250.

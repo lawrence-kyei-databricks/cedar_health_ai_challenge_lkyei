@@ -1,0 +1,31 @@
+# Lakebase Search: Hybrid Vector + Full-Text
+
+## Setup
+- Extension: pgvector v0.8.0 (CREATE EXTENSION vector)
+- Table: cedar_app.clinical_search
+- Columns:
+  - patient_id (TEXT, PK)
+  - clinical_summary (TEXT) — searchable clinical notes
+  - summary_embedding (vector(1536)) — HNSW index, cosine similarity
+  - search_vector (tsvector) — GIN index, auto-generated from clinical_summary
+  - created_at (TIMESTAMPTZ)
+- Rows populated: 290 (from synced_open_atrisk clinical summaries)
+
+## Natural Language Query
+"Find COPD patients recently discharged with medication adherence concerns"
+
+## SQL (Full-Text Search)
+SELECT 
+    patient_id,
+    left(clinical_summary, 150) AS summary_excerpt,
+    ts_rank(search_vector, plainto_tsquery('english', 'COPD discharged medication adherence')) AS relevance
+FROM cedar_app.clinical_search
+WHERE search_vector @@ plainto_tsquery('english', 'COPD discharged medication adherence')
+ORDER BY relevance DESC
+LIMIT 5;
+
+## Key Points
+- Data never leaves the customer's account (no external vector DB)
+- Hybrid approach: full-text for keyword recall, vector for semantic similarity
+- GIN index ensures sub-millisecond full-text search on 290+ clinical summaries
+- HNSW index (cosine) ready for embedding-based semantic search

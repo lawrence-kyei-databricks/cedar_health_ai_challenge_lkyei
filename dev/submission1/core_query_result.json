@@ -1,0 +1,12 @@
+[
+  {"patient_id": "PT-0005344", "patient_display_name": "Patient 0005344", "primary_condition": "COPD", "readmission_risk_score": 0.95, "readmission_exposure_usd": 14250, "days_since_discharge": 21, "open_gap_count": 2, "has_open_followup": true},
+  {"patient_id": "PT-0003704", "patient_display_name": "Patient 0003704", "primary_condition": "PNA", "readmission_risk_score": 0.95, "readmission_exposure_usd": 14250, "days_since_discharge": 17, "open_gap_count": 2, "has_open_followup": true},
+  {"patient_id": "PT-0004401", "patient_display_name": "Patient 0004401", "primary_condition": "COPD", "readmission_risk_score": 0.95, "readmission_exposure_usd": 14250, "days_since_discharge": 10, "open_gap_count": 2, "has_open_followup": true},
+  {"patient_id": "PT-0002679", "patient_display_name": "Patient 0002679", "primary_condition": "AMI", "readmission_risk_score": 0.95, "readmission_exposure_usd": 14250, "days_since_discharge": 21, "open_gap_count": 2, "has_open_followup": true},
+  {"patient_id": "PT-0001613", "patient_display_name": "Patient 0001613", "primary_condition": "COPD", "readmission_risk_score": 0.95, "readmission_exposure_usd": 14250, "days_since_discharge": 9, "open_gap_count": 2, "has_open_followup": true},
+  {"patient_id": "PT-0001367", "patient_display_name": "Patient 0001367", "primary_condition": "PNA", "readmission_risk_score": 0.95, "readmission_exposure_usd": 14250, "days_since_discharge": 14, "open_gap_count": 2, "has_open_followup": true},
+  {"patient_id": "PT-0002228", "patient_display_name": "Patient 0002228", "primary_condition": "HF", "readmission_risk_score": 0.95, "readmission_exposure_usd": 14250, "days_since_discharge": 19, "open_gap_count": 2, "has_open_followup": true},
+  {"patient_id": "PT-0002966", "patient_display_name": "Patient 0002966", "primary_condition": "HF", "readmission_risk_score": 0.95, "readmission_exposure_usd": 14250, "days_since_discharge": 17, "open_gap_count": 2, "has_open_followup": true},
+  {"patient_id": "PT-0002064", "patient_display_name": "Patient 0002064", "primary_condition": "HF", "readmission_risk_score": 0.95, "readmission_exposure_usd": 14250, "days_since_discharge": 11, "open_gap_count": 2, "has_open_followup": true},
+  {"patient_id": "PT-0005508", "patient_display_name": "Patient 0005508", "primary_condition": "COPD", "readmission_risk_score": 0.95, "readmission_exposure_usd": 14250, "days_since_discharge": 21, "open_gap_count": 2, "has_open_followup": true}
+]

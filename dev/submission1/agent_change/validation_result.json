@@ -1,0 +1,30 @@
+{
+  "agent": "Genie Code (Databricks Assistant)",
+  "action": "Schema migration on dev branch",
+  "timestamp": "2026-08-28T01:15:00Z",
+  "branch": "projects/cedar-health-lkyei/branches/dev",
+  "migration": {
+    "table": "cedar_app.interventions",
+    "columns_added": [
+      {"name": "outcome_status", "type": "TEXT", "default": "pending", "constraint": "CHECK IN (pending, completed, cancelled, escalated)"},
+      {"name": "outcome_date", "type": "TIMESTAMPTZ", "default": null},
+      {"name": "effectiveness_score", "type": "NUMERIC(3,2)", "constraint": "CHECK BETWEEN 0.0 AND 1.0"}
+    ],
+    "indexes_added": ["idx_interventions_outcome ON (outcome_status, outcome_date)"]
+  },
+  "validation": {
+    "test_insert": {
+      "query": "INSERT INTO cedar_app.interventions (intervention_id, patient_id, intervention_type, provider_id, status, outcome_status, effectiveness_score) VALUES ('INT-VALIDATE-001', 'PT-0002966', 'followup_call', 'PRV-001', 'dispatched', 'completed', 0.85) RETURNING intervention_id, outcome_status, effectiveness_score",
+      "result": {"intervention_id": "INT-VALIDATE-001", "outcome_status": "completed", "effectiveness_score": 0.85},
+      "status": "SUCCESS"
+    },
+    "schema_verified": true,
+    "columns_on_dev": 9
+  },
+  "promotion": {
+    "target_branch": "projects/cedar-health-lkyei/branches/production",
+    "same_ddl_applied": true,
+    "status": "SUCCESS",
+    "zero_downtime": true
+  }
+}
