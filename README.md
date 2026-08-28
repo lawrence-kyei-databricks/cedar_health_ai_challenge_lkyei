@@ -1,6 +1,7 @@
 # Cedar Health AI Challenge
 
-**Team:** Lawrence Kyei | **Platform:** Databricks (Lakebase + Apps + AI Gateway)
+**Team:** Lawrence Kyei | **Platform:** Databricks (Lakebase + Apps + AI Gateway)  
+**Repo Branch:** `main`
 
 ## The Problem
 
